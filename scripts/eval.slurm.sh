@@ -7,8 +7,8 @@
 #SBATCH --gres=gpu:8
 #SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
-#SBATCH --output=logs/%x-%j.out
-#SBATCH --error=logs/%x-%j.err
+#SBATCH --output=.logs/%x-%j.out
+#SBATCH --error=.logs/%x-%j.err
 #SBATCH --requeue
 
 # ============================================================
@@ -122,11 +122,6 @@ eval_bert_configs["hellaswag_gen"]="0|128|128|128|1234|1"
 eval_bert_configs["mmlu_generative"]="0|128|128|128|1234|1"
 eval_bert_configs["mmlu_pro"]="0|256|256|256|1234|1"
 eval_bert_configs["arc_challenge_chat"]="0|128|128|128|1234|1"
-
-# ============================================================
-# ======================  END CONFIGS  ========================
-# ============================================================
-
 
 # ============================================================
 # ======================  END CONFIGS  ========================
@@ -254,8 +249,8 @@ esac
 [[ "${INSTRUCT}" == "True" ]] && APPLY_CHAT_TEMPLATE_ARG="--apply_chat_template True" || APPLY_CHAT_TEMPLATE_ARG=""
 [[ "${LIMIT}" == "None" ]] && LIMIT_ARG="" || LIMIT_ARG="--limit ${LIMIT}"
 [[ "${USE_LOG}" == "True" ]] && \
-  LOG_ARG="--log_samples --output_path ./logs/${MODEL_CLASS}_${TASK}_${SLURM_JOB_ID}_samples.json" \
-  || LOG_ARG="--output_path ./logs/${MODEL_CLASS}_${TASK}_${SLURM_JOB_ID}_samples.json"
+  LOG_ARG="--log_samples --output_path ./.logs/${MODEL_CLASS}_${TASK}_${SLURM_JOB_ID}_samples.json" \
+  || LOG_ARG="--output_path ./.logs/${MODEL_CLASS}_${TASK}_${SLURM_JOB_ID}_samples.json"
 
 echo -e "\nLaunching ${MODEL_CLASS} on ${TASK} using ${MODEL_PATH}"
 echo "============================"

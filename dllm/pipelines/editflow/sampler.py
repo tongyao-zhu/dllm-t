@@ -96,7 +96,7 @@ def tau_leap_step(
 
 
 @dataclass
-class EditFLowSamplerConfig(SamplerConfig):
+class EditFlowSamplerConfig(SamplerConfig):
     tau: float = 0.01
     time_epsilon: float = 1e-3
     mask_length: int = 128
@@ -112,12 +112,12 @@ class EditFlowSampler(BaseSampler):
     def sample(
         self,
         inputs: list[torch.Tensor | list],
-        config: EditFLowSamplerConfig | None = None,
+        config: EditFlowSamplerConfig | None = None,
         **kwargs,
     ) -> SamplerOutput | torch.Tensor:
 
         if config is None:
-            config = EditFLowSamplerConfig()
+            config = EditFlowSamplerConfig()
 
         tau = kwargs.get("tau", config.tau)
         time_epsilon = kwargs.get("time_epsilon", config.time_epsilon)

@@ -32,7 +32,7 @@ class BaseSampler(ABC):
     @torch.no_grad()
     def sample(
         self,
-        prompts: list[torch.Tensor, list],
+        prompts: list[torch.Tensor | list],
         config: SamplerConfig | None = None,
         **kwargs,
     ) -> SamplerOutput:
@@ -42,7 +42,7 @@ class BaseSampler(ABC):
     @torch.no_grad()
     def infill(
         self,
-        inputs: list[torch.Tensor, list],
+        inputs: list[torch.Tensor | list],
         config: SamplerConfig | None = None,
         **kwargs,
     ) -> SamplerOutput:

@@ -13,7 +13,7 @@ Local users
         examples/dream/sft.py
 
 Slurm users
-# Note: run `mkdir logs` before running sbatch; and adjust
+# Note: run `mkdir .logs` before running sbatch; and adjust
 #       `partition` and `quotatype` in `scripts/train.slurm.sh` for your cluster.
 ------------
 - 1 Node, 8 GPUs (FSDP):
@@ -77,7 +77,7 @@ class DataArguments(dllm.utils.DataArguments):
 @dataclass
 class TrainingArguments(dllm.pipelines.dream.DreamTrainer.DreamConfig):
     output_dir: str = (
-        "models/Dream-v0-Base-7B/tulu-3-sft-mixture[train:10000,test:1000]"
+        ".models/Dream-v0-Base-7B/tulu-3-sft-mixture[train:10000,test:1000]"
     )
     group_by_length: bool = True
     num_train_epochs: float = 5

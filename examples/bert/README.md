@@ -49,7 +49,7 @@ accelerate launch --config_file scripts/accelerate_configs/ddp.yaml --num_proces
     --learning_rate 1e-4 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
-    --output_dir "models/ModernBERT-large/tiny-shakespeare"
+    --output_dir ".models/ModernBERT-large/tiny-shakespeare"
 ```
 
 To sample from the model interactively:
@@ -57,7 +57,7 @@ To sample from the model interactively:
 # Enter a prompt (e.g., "First citizen: Before we proceed any further, hear me speak."),
 # or press Enter to let the model generate text from scratch.
 python -u examples/bert/chat.py \
-    --model_name_or_path "models/ModernBERT-large/tiny-shakespeare/checkpoint-final" \
+    --model_name_or_path ".models/ModernBERT-large/tiny-shakespeare/checkpoint-final" \
     --chat_template False --remasking "random" --temperature 0.7
 ```
 
@@ -79,7 +79,7 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
     --eval_strategy "no" \
-    --output_dir "models/ModernBERT-large/openwebtext"
+    --output_dir ".models/ModernBERT-large/openwebtext"
 ```
 
 To sample from the model interactively:
@@ -87,7 +87,7 @@ To sample from the model interactively:
 # Enter a prompt (e.g., "Lebron James is"),
 # or press Enter to let the model generate text from scratch.
 python -u examples/bert/chat.py \
-    --model_name_or_path "models/ModernBERT-large/openwebtext/checkpoint-final" \
+    --model_name_or_path ".models/ModernBERT-large/openwebtext/checkpoint-final" \
     --chat_template False --remasking "random" --temperature 0.7
 ```
 
@@ -107,13 +107,13 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --learning_rate 1e-4 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
-    --output_dir "models/ModernBERT-large/alpaca"
+    --output_dir ".models/ModernBERT-large/alpaca"
 ```
 
 To chat with the model:
 ```shell
 python -u examples/bert/chat.py \
-    --model_name_or_path "models/ModernBERT-large/alpaca/checkpoint-final"
+    --model_name_or_path ".models/ModernBERT-large/alpaca/checkpoint-final"
 ```
 
 ## `BERT-Chat`
@@ -137,7 +137,7 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --learning_rate 1e-4 \
     --per_device_train_batch_size 48 \
     --per_device_eval_batch_size 48 \
-    --output_dir "models/ModernBERT-base/tulu-3-sft-mixture+smoltalk"
+    --output_dir ".models/ModernBERT-base/tulu-3-sft-mixture+smoltalk"
 ```
 
 To reproduce [`ModernBERT-large-chat-v0.1`](https://huggingface.co/dllm-collection/ModernBERT-large-chat-v0.1), run the command below (about 7 hours on 8 A100s):
@@ -151,7 +151,7 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --learning_rate 1e-4 \
     --per_device_train_batch_size 48 \
     --per_device_eval_batch_size 48 \
-    --output_dir "models/ModernBERT-large/tulu-3-sft-mixture+smoltalk"
+    --output_dir ".models/ModernBERT-large/tulu-3-sft-mixture+smoltalk"
 ```
 
 ### Inference

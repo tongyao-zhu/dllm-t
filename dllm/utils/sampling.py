@@ -1,4 +1,7 @@
-def decode_trim(tokenizer, seq_ids_list, input_ids_list) -> str:
+import torch
+
+
+def sample_trim(tokenizer, seq_ids_list, input_ids_list) -> list[str]:
     """
     Return only the generated text, truncated at the first EOS **after** the prompt.
 
@@ -48,9 +51,8 @@ def decode_trim(tokenizer, seq_ids_list, input_ids_list) -> str:
         sequences.append(text)
     return sequences
 
-import torch
 
-def decode_infill(tokenizer, seq_ids_list, input_ids_list) -> str:
+def infill_trim(tokenizer, seq_ids_list, input_ids_list) -> list[str]:
     """
     Return only the generated text, truncated at the first EOS **after** the prompt.
 
@@ -72,12 +74,11 @@ def decode_infill(tokenizer, seq_ids_list, input_ids_list) -> str:
 
         # Skip left padding tokens (necessary for dream)
         pad_id = getattr(tokenizer, "pad_token_id", None)
-        # breakpoint()
         if pad_id is not None:
             while full.numel() and full[0].item() == pad_id:
                 full = full[1:]
 
-        masked_index = (prompt == tokenizer.mask_token_id)
+        masked_index = prompt == tokenizer.mask_token_id
         infill = full[masked_index]
 
         end = len(infill)

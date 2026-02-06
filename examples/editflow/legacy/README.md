@@ -20,7 +20,7 @@ This directory provides an educational reference for training EditFlow models. I
 
 ## Setup
 > [!IMPORTANT]  
-> **Slurm users:** Update `scripts/train.slurm.sh` and `mkdir logs`: see [(optional) Slurm setup](/README.md/#optional-slurm-setup) for details.
+> **Slurm users:** Update `scripts/train.slurm.sh` and `mkdir .logs`: see [(optional) Slurm setup](/README.md/#optional-slurm-setup) for details.
 
 ##  Files
 ```
@@ -69,7 +69,7 @@ accelerate launch \
     --lm_head_key "model.transformer.ff_out" \
     --init_editflow_from_src True \
     --dataset_args "allenai/tulu-3-sft-mixture" \
-    --output_dir "models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture" \
+    --output_dir ".models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture" \
     --x0_sampler "masks[length:128]" \
     --max_length 1024 \
     --num_train_epochs 4 \
@@ -85,7 +85,7 @@ sbatch --nodes=4 --gres=gpu:8 scripts/train.slurm.sh \
     --lm_head_key "model.transformer.ff_out" \
     --init_editflow_from_src True \
     --dataset_args "allenai/tulu-3-sft-mixture" \
-    --output_dir "models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture" \
+    --output_dir ".models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture" \
     --x0_sampler "masks[length:128]" \
     --max_length 1024 \
     --num_train_epochs 4 \
@@ -106,7 +106,7 @@ sbatch --nodes=24 --gres=gpu:8 scripts/train.slurm.sh \
     --script_path "examples/editflow/pt_llada.py" \
     --model_name_or_path "GSAI-ML/LLaDA-8B-Base" \
     --dataset_args "mlfoundations/dclm-baseline-1.0" \
-    --output_dir "models/EditFlow-LLaDA-8B-Base/dclm-baseline-1.0" \
+    --output_dir ".models/EditFlow-LLaDA-8B-Base/dclm-baseline-1.0" \
     --x0_sampler "masks[length:128]" \
     --max_length 1024 \
     --max_steps 2000 \
@@ -120,9 +120,9 @@ Finetune on a subset of [allenai/tulu-3-sft-mixture](https://huggingface.co/data
 sbatch --nodes=1 --gres=gpu:8 scripts/train.slurm.sh \
     --accelerate_config "fsdp" \
     --script_path "examples/editflow/sft_llada.py" \
-    --model_name_or_path "models/EditFlow-LLaDA-8B-Base/dclm-baseline-1.0/checkpoint-final" \
+    --model_name_or_path ".models/EditFlow-LLaDA-8B-Base/dclm-baseline-1.0/checkpoint-final" \
     --dataset_args "allenai/tulu-3-sft-mixture[train:10000,test:1000]" \
-    --output_dir "models/EditFlow-LLaDA-8B-Base/dclm-baseline-1.0" \
+    --output_dir ".models/EditFlow-LLaDA-8B-Base/dclm-baseline-1.0" \
     --x0_sampler "masks[length:128]" \
     --max_length 1024 \
     --num_train_epochs 4 \
@@ -136,13 +136,13 @@ After training, you can visualize how the model performs mask substitution, inse
 ```shell
 # Sample a long sequence to visualize insertions after 128 <mask> tokens
 python examples/editflow/sample.py \
-  --model_name_or_path "models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture/checkpoint-final" \
+  --model_name_or_path ".models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture/checkpoint-final" \
   --tau 0.02 --mask_length 128 --seed 7070 \
   --prompt "write a romantic story" --make_gif
 
 # Sample a short sequence to visualize deletions after 128 <mask> tokens
 python examples/editflow/sample.py \
-  --model_name_or_path "models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture/checkpoint-final" \
+  --model_name_or_path ".models/EditFlow-LLaDA-8B-Instruct-Adapt/tulu-3-sft-mixture/checkpoint-final" \
   --tau 0.02 --mask_length 128 --seed 7070 \
   --prompt "write a single-sentence romantic story" --make_gif
 ```

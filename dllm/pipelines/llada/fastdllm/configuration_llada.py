@@ -2,6 +2,7 @@
 LLaDA Fast-dLLM configuration wrapper.
 Reuses LLaDAConfig but registers under a different model_type.
 """
+
 from ..models.configuration_llada import LLaDAConfig
 
 

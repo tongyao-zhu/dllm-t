@@ -2,6 +2,13 @@ from .configuration_dream import DreamFastdLLMConfig
 from .modeling_dream import DreamFastdLLMModel
 from .sampler import DreamFastdLLMSampler, DreamFastdLLMSamplerConfig
 
+__all__ = [
+    "DreamFastdLLMConfig",
+    "DreamFastdLLMModel",
+    "DreamFastdLLMSampler",
+    "DreamFastdLLMSamplerConfig",
+]
+
 # Register with HuggingFace Auto classes for local usage
 try:
     from transformers import AutoConfig, AutoModel, AutoModelForMaskedLM

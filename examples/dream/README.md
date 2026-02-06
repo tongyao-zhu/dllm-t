@@ -13,7 +13,7 @@ Resources and examples for training (finetuning & pretraining) and evaluating di
 
 <!-- ## Setup
 > [!IMPORTANT]  
-> **Slurm users:** Update `scripts/train.slurm.sh` and `mkdir logs`: see [(optional) Slurm setup](/README.md/#optional-slurm-setup) for details.
+> **Slurm users:** Update `scripts/train.slurm.sh` and `mkdir .logs`: see [(optional) Slurm setup](/README.md/#optional-slurm-setup) for details.
 > -->
 
 
@@ -71,7 +71,7 @@ accelerate launch \
     --learning_rate 2e-5 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
-    --output_dir "models/Dream-v0-Base-7B/alpaca"
+    --output_dir ".models/Dream-v0-Base-7B/alpaca"
 ```
 If you are using slurm and want to train across, for example, 2 nodes (16 GPUs total), run:
 ```shell
@@ -85,7 +85,7 @@ sbatch --nodes=2 --gres=gpu:8 scripts/train.slurm.sh \
     --learning_rate 2e-5 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
-    --output_dir "models/Dream-v0-Base-7B/alpaca"
+    --output_dir ".models/Dream-v0-Base-7B/alpaca"
 ```
 
 <!-- **Reproducing [Dream-v0-Instruct-7B](https://huggingface.co/Dream-org/Dream-v0-Base-7B)**. We tried our best to reproduce Dream-v0-Instruct-7B by finetuning Dream-v0-Base-7B using our training pipeline on the public instruction-following dataset [allenai/tulu-3-sft-mixture](https://huggingface.co/datasets/allenai/tulu-3-sft-mixture): -->
@@ -98,7 +98,7 @@ python dllm/tools/preprocess_sft_dataset.py \
     --model_name_or_path "Dream-org/Dream-v0-Base-7B" \
     --sft_map_fn_path "dllm.utils.default_sft_map_fn" \
     --dataset_args "allenai/tulu-3-sft-mixture" \
-    --output_dir "data/sft/dream/tulu-3-sft-mixture" \
+    --output_dir ".data/sft/dream/tulu-3-sft-mixture" \
     --num_proc 64
 
 # Train on 24*8=192 A100s with FSDP, take about 8 hours
@@ -106,14 +106,14 @@ sbatch --nodes=24 --gres=gpu:8 scripts/train.slurm.sh \
     --accelerate_config "fsdp" \
     --script_path "examples/dream/sft.py" \
     --model_name_or_path "Dream-org/Dream-v0-Base-7B" \
-    --dataset_args "data/sft/dream/tulu-3-sft-mixture" \
+    --dataset_args ".data/sft/dream/tulu-3-sft-mixture" \
     --load_preprocessed_data True \
     --max_length 1024 \
     --num_train_epochs 5 \
     --learning_rate 2e-5 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
-    --output_dir "models/Dream-v0-Base-7B/tulu-3-sft-mixture"
+    --output_dir ".models/Dream-v0-Base-7B/tulu-3-sft-mixture"
 ```
 <!-- [TODO] Training curves are on Wandb; checkpoints with evaluation results are available on Hugging Face. See the [Evaluation](#evaluation) section below for evaluation instructions. -->
 
@@ -131,7 +131,7 @@ sbatch --nodes=24 --gres=gpu:8 scripts/train.slurm.sh \
     --learning_rate 1e-4 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
-    --output_dir "models/Dream-v0-Base-7B/dclm-baseline-1.0"
+    --output_dir ".models/Dream-v0-Base-7B/dclm-baseline-1.0"
 ```
 
 ## Inference

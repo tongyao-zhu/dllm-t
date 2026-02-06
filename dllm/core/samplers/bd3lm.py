@@ -324,13 +324,6 @@ class BD3LMSampler(BaseSampler):
             new_block = torch.full(
                 (B, cur_block_len), mask_id, dtype=torch.long, device=self.model.device
             )
-            # if done.any():
-            #     new_block = torch.where(
-            #         done.unsqueeze(1),
-            #         torch.full_like(new_block, pad_id),
-            #         new_block,
-            #     )
-
             x = torch.cat([x, new_block], dim=1)  # [B, T_prefix + cur_block_len]
 
             unmasked_index = torch.cat(

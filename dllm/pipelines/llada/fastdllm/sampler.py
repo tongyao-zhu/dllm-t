@@ -33,11 +33,11 @@ def get_transfer_index(
     logits: torch.Tensor,
     temperature: float,
     remasking: str,
-    mask_index: torch.Tensor,                     # (B, L) bool
-    x: torch.Tensor,                              # (B, L) long
+    mask_index: torch.Tensor,  # (B, L) bool
+    x: torch.Tensor,  # (B, L) long
     num_transfer_tokens: Optional[torch.Tensor] = None,  # (B,) long (top-k mode)
-    threshold: Optional[float] = None,            # threshold mode
-    factor: Optional[float] = None,               # dynamic mode (highest priority)
+    threshold: Optional[float] = None,  # threshold mode
+    factor: Optional[float] = None,  # dynamic mode (highest priority)
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Returns:
@@ -56,7 +56,9 @@ def get_transfer_index(
     # 2) Confidence (or random)
     if remasking == "low_confidence":
         p = F.softmax(logits.to(torch.float32), dim=-1)
-        conf = torch.gather(p, dim=-1, index=x0.unsqueeze(-1)).squeeze(-1)  # (B, L) float32
+        conf = torch.gather(p, dim=-1, index=x0.unsqueeze(-1)).squeeze(
+            -1
+        )  # (B, L) float32
     elif remasking == "random":
         conf = torch.rand(x0.shape, device=x0.device, dtype=torch.float32)
     else:
@@ -67,7 +69,9 @@ def get_transfer_index(
 
     # Use a very negative value for non-mask positions so they never get selected
     neg = torch.finfo(conf.dtype).min
-    confidence = torch.where(mask_index, conf, torch.tensor(neg, device=conf.device, dtype=conf.dtype))  # (B, L)
+    confidence = torch.where(
+        mask_index, conf, torch.tensor(neg, device=conf.device, dtype=conf.dtype)
+    )  # (B, L)
 
     # --------------------------
     # A) Dynamic factor schedule
@@ -77,13 +81,17 @@ def get_transfer_index(
         values, idx = torch.sort(confidence, dim=1, descending=True)  # (B, L)
 
         # rank r = 1..L : thr[r] = 1 - factor/(r+1), but force rank-1 always selectable with -1
-        ranks = torch.arange(1, L + 1, device=confidence.device, dtype=values.dtype)  # (L,)
-        factor_t = torch.tensor(float(factor), device=confidence.device, dtype=values.dtype)
+        ranks = torch.arange(
+            1, L + 1, device=confidence.device, dtype=values.dtype
+        )  # (L,)
+        factor_t = torch.tensor(
+            float(factor), device=confidence.device, dtype=values.dtype
+        )
         thr = 1.0 - (factor_t / (ranks + 1.0))  # (L,)
         thr[0] = -1.0
 
-        accept = values >= thr.unsqueeze(0)      # (B, L) bool
-        k = accept.sum(dim=1).to(torch.long)     # (B,)
+        accept = values >= thr.unsqueeze(0)  # (B, L) bool
+        k = accept.sum(dim=1).to(torch.long)  # (B,)
 
         # never select more than masked count
         n_masked = mask_index.sum(dim=1).to(torch.long)
@@ -104,11 +112,13 @@ def get_transfer_index(
         transfer_index = mask_index & (confidence >= threshold)
 
         # force at least one transfer per row if there is any mask and none selected
-        has_mask = mask_index.any(dim=1)                 # (B,)
-        selected = transfer_index.any(dim=1)             # (B,)
+        has_mask = mask_index.any(dim=1)  # (B,)
+        selected = transfer_index.any(dim=1)  # (B,)
         need_force = has_mask & (~selected)
         if need_force.any():
-            max_idx = torch.argmax(confidence, dim=1, keepdim=True)  # (B,1) — safe because non-masks are neg
+            max_idx = torch.argmax(
+                confidence, dim=1, keepdim=True
+            )  # (B,1) — safe because non-masks are neg
             force = torch.zeros_like(transfer_index).scatter_(1, max_idx, True)
             transfer_index = (transfer_index | force) & mask_index
 
@@ -118,19 +128,23 @@ def get_transfer_index(
     # C) Top-k (quota) mode
     # --------------------------
     if num_transfer_tokens is None:
-        raise ValueError("num_transfer_tokens must be provided when threshold is None and factor is None")
+        raise ValueError(
+            "num_transfer_tokens must be provided when threshold is None and factor is None"
+        )
 
     if num_transfer_tokens.dim() == 2 and num_transfer_tokens.size(1) == 1:
         num_transfer_tokens = num_transfer_tokens.squeeze(1)
 
-    num_transfer_tokens = num_transfer_tokens.to(dtype=torch.long, device=confidence.device)
+    num_transfer_tokens = num_transfer_tokens.to(
+        dtype=torch.long, device=confidence.device
+    )
     num_transfer_tokens = torch.clamp(num_transfer_tokens, min=0)
 
     values, idx = torch.sort(confidence, dim=1, descending=True)  # (B, L)
     B, L = confidence.shape
 
     cols = torch.arange(L, device=confidence.device).unsqueeze(0).expand(B, L)
-    select_sorted = cols < num_transfer_tokens.unsqueeze(1)       # (B, L)
+    select_sorted = cols < num_transfer_tokens.unsqueeze(1)  # (B, L)
 
     transfer_int = torch.zeros(B, L, device=confidence.device, dtype=torch.int8)
     transfer_int = transfer_int.scatter(1, idx, select_sorted.to(torch.int8))
@@ -188,11 +202,15 @@ class LLaDAFastdLLMSampler(BaseSampler):
         block_size = kwargs.get("block_size", config.block_size)
         temperature = kwargs.get("temperature", config.temperature)
         remasking = kwargs.get("remasking", config.remasking)
-        stochastic_transfer = kwargs.get("stochastic_transfer", config.stochastic_transfer)
+        stochastic_transfer = kwargs.get(
+            "stochastic_transfer", config.stochastic_transfer
+        )
         return_dict = kwargs.get("return_dict", config.return_dict)
         right_shift_logits = kwargs.get("right_shift_logits", config.right_shift_logits)
         suppress_tokens = kwargs.get("suppress_tokens", config.suppress_tokens)
-        begin_suppress_tokens = kwargs.get("begin_suppress_tokens", config.begin_suppress_tokens)
+        begin_suppress_tokens = kwargs.get(
+            "begin_suppress_tokens", config.begin_suppress_tokens
+        )
 
         use_cache = kwargs.get("use_cache", config.use_cache)
         threshold = kwargs.get("threshold", config.threshold)
@@ -208,7 +226,9 @@ class LLaDAFastdLLMSampler(BaseSampler):
         if isinstance(inputs, torch.Tensor):
             if inputs.dim() == 1:
                 inputs = inputs.unsqueeze(0)
-            inputs_list = [row.to(device=self.model.device, dtype=torch.long) for row in inputs]
+            inputs_list = [
+                row.to(device=self.model.device, dtype=torch.long) for row in inputs
+            ]
         else:
             # list of lists or list of tensors
             if len(inputs) == 0:
@@ -229,7 +249,11 @@ class LLaDAFastdLLMSampler(BaseSampler):
             fixed = []
             for p in inputs_list:
                 if p.numel() == 0:
-                    fixed.append(torch.tensor([bos_id], device=self.model.device, dtype=torch.long))
+                    fixed.append(
+                        torch.tensor(
+                            [bos_id], device=self.model.device, dtype=torch.long
+                        )
+                    )
                 else:
                     fixed.append(p)
             inputs_list = fixed
@@ -312,21 +336,27 @@ class LLaDAFastdLLMSampler(BaseSampler):
                 block_len = e - s
 
                 # Build block_mask_index for scheduling (B, block_size), padded with False
-                block_mask_index = torch.zeros((B, block_size), dtype=torch.bool, device=x.device)
-                block_mask_index[:, :block_len] = (x[:, s:e] == mask_id)
+                block_mask_index = torch.zeros(
+                    (B, block_size), dtype=torch.bool, device=x.device
+                )
+                block_mask_index[:, :block_len] = x[:, s:e] == mask_id
 
             else:
                 # no-cache mode: per-sample boundaries
                 # Build a block_mask_index (B, block_size) with per-sample widths
-                block_mask_index = torch.zeros((B, block_size), dtype=torch.bool, device=x.device)
+                block_mask_index = torch.zeros(
+                    (B, block_size), dtype=torch.bool, device=x.device
+                )
                 widths = []
                 for j in range(B):
                     start_j = prompt_lens[j] + b * block_size
-                    end_j = min(start_j + block_size, prompt_lens[j] + max_new_tokens, T)
+                    end_j = min(
+                        start_j + block_size, prompt_lens[j] + max_new_tokens, T
+                    )
                     width_j = max(0, end_j - start_j)
                     widths.append((start_j, end_j, width_j))
                     if width_j > 0:
-                        block_mask_index[j, :width_j] = (x[j, start_j:end_j] == mask_id)
+                        block_mask_index[j, :width_j] = x[j, start_j:end_j] == mask_id
 
             # quotas for this block
             num_transfer_tokens = get_num_transfer_tokens(
@@ -350,7 +380,9 @@ class LLaDAFastdLLMSampler(BaseSampler):
                         start_j, end_j, width_j = widths[j]
                         if width_j > 0:
                             # only masked positions in current block
-                            mask_allowed[j, start_j:end_j] = (x[j, start_j:end_j] == mask_id)
+                            mask_allowed[j, start_j:end_j] = (
+                                x[j, start_j:end_j] == mask_id
+                            )
 
                     if mask_allowed.sum() == 0:
                         break
@@ -393,11 +425,13 @@ class LLaDAFastdLLMSampler(BaseSampler):
 
                 _apply_suppressions(logits_full)
                 if right_shift_logits:
-                    logits_full = torch.cat([logits_full[:, :1], logits_full[:, :-1]], dim=1)
+                    logits_full = torch.cat(
+                        [logits_full[:, :1], logits_full[:, :-1]], dim=1
+                    )
 
                 # Step 0 update on full logits, restricted to [s:e]
                 mask_allowed = torch.zeros_like(x, dtype=torch.bool)
-                mask_allowed[:, s:e] = (x[:, s:e] == mask_id)
+                mask_allowed[:, s:e] = x[:, s:e] == mask_id
 
                 if mask_allowed.sum() > 0:
                     quota = None if threshold is not None else num_transfer_tokens[:, 0]
@@ -418,7 +452,9 @@ class LLaDAFastdLLMSampler(BaseSampler):
 
                 # Trim cache to prefix only (up to s)
                 if past_key_values is None:
-                    raise RuntimeError("Model did not return past_key_values with use_cache=True")
+                    raise RuntimeError(
+                        "Model did not return past_key_values with use_cache=True"
+                    )
                 past_key_values = _trim_past_key_values(past_key_values, s)
 
                 # Refinement steps on suffix with prefix cache
@@ -428,7 +464,7 @@ class LLaDAFastdLLMSampler(BaseSampler):
                         break
 
                     x_suffix = x[:, s:]  # (B, T-s)
-                    mask_suffix = (x_suffix == mask_id)
+                    mask_suffix = x_suffix == mask_id
                     # restrict to current block only
                     if x_suffix.size(1) > block_len:
                         mask_suffix[:, block_len:] = False
@@ -438,7 +474,7 @@ class LLaDAFastdLLMSampler(BaseSampler):
 
                     out_suf = self.model(
                         x_suffix,
-                        attention_mask=attention_mask,   # full-length mask is OK for this model
+                        attention_mask=attention_mask,  # full-length mask is OK for this model
                         past_key_values=past_key_values,
                         use_cache=True,
                     )
@@ -446,9 +482,15 @@ class LLaDAFastdLLMSampler(BaseSampler):
                     _apply_suppressions(logits_suf)
 
                     if right_shift_logits:
-                        logits_suf = torch.cat([logits_suf[:, :1], logits_suf[:, :-1]], dim=1)
+                        logits_suf = torch.cat(
+                            [logits_suf[:, :1], logits_suf[:, :-1]], dim=1
+                        )
 
-                    quota = None if (threshold is not None or factor is not None) else num_transfer_tokens[:, i]
+                    quota = (
+                        None
+                        if (threshold is not None or factor is not None)
+                        else num_transfer_tokens[:, i]
+                    )
                     x0_suf, transfer_suf = get_transfer_index(
                         logits=logits_suf,
                         temperature=temperature,
@@ -478,11 +520,15 @@ class LLaDAFastdLLMSampler(BaseSampler):
                 logits_full = out_full.logits
                 past_key_values = out_full.past_key_values
                 if past_key_values is None:
-                    raise RuntimeError("Model did not return past_key_values with use_cache=True")
+                    raise RuntimeError(
+                        "Model did not return past_key_values with use_cache=True"
+                    )
 
                 _apply_suppressions(logits_full)
                 if right_shift_logits:
-                    logits_full = torch.cat([logits_full[:, :1], logits_full[:, :-1]], dim=1)
+                    logits_full = torch.cat(
+                        [logits_full[:, :1], logits_full[:, :-1]], dim=1
+                    )
 
                 # replace_position mask for this block (B, T)
                 replace_position = torch.zeros_like(x, dtype=torch.bool)
@@ -490,7 +536,7 @@ class LLaDAFastdLLMSampler(BaseSampler):
 
                 # Step 0 update on full logits, restricted to [s:e]
                 mask_allowed = torch.zeros_like(x, dtype=torch.bool)
-                mask_allowed[:, s:e] = (x[:, s:e] == mask_id)
+                mask_allowed[:, s:e] = x[:, s:e] == mask_id
 
                 if mask_allowed.sum() > 0:
                     quota = None if threshold is not None else num_transfer_tokens[:, 0]
@@ -512,7 +558,7 @@ class LLaDAFastdLLMSampler(BaseSampler):
                 # Use for loop here for better compilation performance according to original implementation
                 for i_step in range(1, effective_steps):
                     blk = x[:, s:e]
-                    mask_blk = (blk == mask_id)
+                    mask_blk = blk == mask_id
                     if mask_blk.sum() == 0:
                         break
 
@@ -528,9 +574,15 @@ class LLaDAFastdLLMSampler(BaseSampler):
                     _apply_suppressions(logits_blk)
 
                     if right_shift_logits:
-                        logits_blk = torch.cat([logits_blk[:, :1], logits_blk[:, :-1]], dim=1)
+                        logits_blk = torch.cat(
+                            [logits_blk[:, :1], logits_blk[:, :-1]], dim=1
+                        )
 
-                    quota = None if threshold is not None else num_transfer_tokens[:, i_step]
+                    quota = (
+                        None
+                        if threshold is not None
+                        else num_transfer_tokens[:, i_step]
+                    )
                     x0_blk, transfer_blk = get_transfer_index(
                         logits=logits_blk,
                         temperature=temperature,

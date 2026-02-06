@@ -170,7 +170,9 @@ class DreamFastdLLMSampler(BaseSampler):
             if alg in ("maskgit_plus", "confidence_threshold"):
                 return sample_tokens(mask_logits, **kwargs_tokens)
             if alg == "topk_margin":
-                return sample_tokens(mask_logits, margin_confidence=True, **kwargs_tokens)
+                return sample_tokens(
+                    mask_logits, margin_confidence=True, **kwargs_tokens
+                )
             if alg == "entropy":
                 return sample_tokens(mask_logits, neg_entropy=True, **kwargs_tokens)
             raise RuntimeError(f"Unknown alg: {alg}")
@@ -216,7 +218,12 @@ class DreamFastdLLMSampler(BaseSampler):
                         continue
 
                     # Budget this step: top-k where k = num_transfer + leftover from past steps
-                    current_transfer_tokens = int(mask_index.sum().item()) - num_transfer_tokens_list[0, i+1:].sum().item() if i + 1 < effective_steps else int(mask_index.sum().item())
+                    current_transfer_tokens = (
+                        int(mask_index.sum().item())
+                        - num_transfer_tokens_list[0, i + 1 :].sum().item()
+                        if i + 1 < effective_steps
+                        else int(mask_index.sum().item())
+                    )
 
                     selected_confidence, select_index = torch.topk(
                         full_confidence, current_transfer_tokens
@@ -280,7 +287,9 @@ class DreamFastdLLMSampler(BaseSampler):
                                     fc, num_samples=number_transfer_tokens
                                 )
 
-                            x_ = torch.full_like(x, mask_token_id, device=self.model.device)
+                            x_ = torch.full_like(
+                                x, mask_token_id, device=self.model.device
+                            )
                             x_[mask_index] = x0.clone()
                             x[j, transfer_index] = x_[j, transfer_index]
 
@@ -305,13 +314,11 @@ class DreamFastdLLMSampler(BaseSampler):
             )
             num_blocks = gen_length // block_size
 
-            assert steps % num_blocks == 0, (
-                f"steps ({steps}) must be divisible by num_blocks ({num_blocks})"
-            )
+            assert (
+                steps % num_blocks == 0
+            ), f"steps ({steps}) must be divisible by num_blocks ({num_blocks})"
             steps_per_block = steps // num_blocks
-            timesteps = torch.linspace(
-                1, eps, steps_per_block + 1, device=x.device
-            )
+            timesteps = torch.linspace(1, eps, steps_per_block + 1, device=x.device)
             if attention_mask is not None and torch.any(attention_mask == 0):
                 cache_attention_mask = torch.logical_and(
                     attention_mask.bool().unsqueeze(1).unsqueeze(-2),
@@ -401,8 +408,7 @@ class DreamFastdLLMSampler(BaseSampler):
                     confidence, x0 = sample_with_alg(mask_logits)
 
                     current_transfer_tokens = (
-                        x[:, current_block_start:current_block_end]
-                        == mask_token_id
+                        x[:, current_block_start:current_block_end] == mask_token_id
                     ).sum()
 
                     full_confidence = torch.full_like(
@@ -413,7 +419,9 @@ class DreamFastdLLMSampler(BaseSampler):
                     )
                     full_confidence[mask_index] = confidence
                     full_confidence[:, block_size:] = -torch.inf
-                    x_ = torch.full_like(region, mask_token_id, device=self.model.device)
+                    x_ = torch.full_like(
+                        region, mask_token_id, device=self.model.device
+                    )
                     x_[mask_index] = x0.clone()
 
                     if alg == "confidence_threshold":
@@ -429,7 +437,9 @@ class DreamFastdLLMSampler(BaseSampler):
                         for k in range(1, current_transfer_tokens):
                             if selected_confidence[0, k] < threshold:
                                 transfer_index[0, select_index[0, k]] = False
-                        x[:, current_block_start:end][transfer_index] = x_[transfer_index]
+                        x[:, current_block_start:end][transfer_index] = x_[
+                            transfer_index
+                        ]
 
                     else:
                         if inner_step == steps_per_block:
@@ -455,11 +465,15 @@ class DreamFastdLLMSampler(BaseSampler):
                                     fc, num_samples=number_transfer_tokens
                                 )
 
-                            transfer_index = torch.zeros_like(x_, device=x.device, dtype=torch.bool)
+                            transfer_index = torch.zeros_like(
+                                x_, device=x.device, dtype=torch.bool
+                            )
                             transfer_index.scatter_(1, select_index, True)
 
                             transfer_index &= mask_index
-                            x[:, current_block_start:end][transfer_index] = x_[transfer_index]
+                            x[:, current_block_start:end][transfer_index] = x_[
+                                transfer_index
+                            ]
 
                             x = generation_tokens_hook_func(global_step, x, logits)
                     if histories is not None:
@@ -476,7 +490,6 @@ class DreamFastdLLMSampler(BaseSampler):
                 return x
             else:
                 return SamplerOutput(sequences=x, histories=histories)
-
 
     @torch.no_grad()
     def infill(
