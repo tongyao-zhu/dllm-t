@@ -96,6 +96,7 @@ class BD3LMTrainer(MDLMTrainer):
     ):
         super().__init__(args=args, *pargs, **kwargs)
         self.block_size = args.block_size
+        self._cached_block_mask = {}  # Cache for attention masks keyed by (seq_len, attn_impl)
 
     def compute_loss(
         self,
@@ -154,34 +155,41 @@ class BD3LMTrainer(MDLMTrainer):
         concat_input_ids = torch.cat([noised_input_ids, input_ids], dim=1)
 
         # [TODO]: others like flash attention 2
-        if self.accelerator.unwrap_model(model).config._attn_implementation == "sdpa":
-            attention_mask = _create_bd3lm_attention_mask(
-                b=None,
-                h=None,
-                q_idx=torch.arange(l * 2)[:, None],
-                kv_idx=torch.arange(l * 2)[None, :],
-                block_size=self.block_size,
-                n=l,
-            )
-            attention_mask = (
-                attention_mask.unsqueeze(0).unsqueeze(0).expand(1, 1, 2 * l, 2 * l)
-            )
-            attention_mask = attention_mask.to(input_ids.device)
-        elif (
-            self.accelerator.unwrap_model(model).config._attn_implementation
-            == "flex_attention"
-        ):
-            from torch.nn.attention.flex_attention import create_block_mask
-
-            attention_mask = create_block_mask(
-                partial(_create_bd3lm_attention_mask, block_size=self.block_size, n=l),
-                B=None,
-                H=None,
-                Q_LEN=l * 2,
-                KV_LEN=l * 2,
-            )
+        attn_impl = self.accelerator.unwrap_model(model).config._attn_implementation
+        cache_key = (l, attn_impl)
+        if cache_key in self._cached_block_mask:
+            attention_mask = self._cached_block_mask[cache_key]
         else:
-            raise NotImplementedError
+            if attn_impl == "sdpa":
+                attention_mask = _create_bd3lm_attention_mask(
+                    b=None,
+                    h=None,
+                    q_idx=torch.arange(l * 2)[:, None],
+                    kv_idx=torch.arange(l * 2)[None, :],
+                    block_size=self.block_size,
+                    n=l,
+                )
+                attention_mask = (
+                    attention_mask.unsqueeze(0).unsqueeze(0).expand(1, 1, 2 * l, 2 * l)
+                )
+                attention_mask = attention_mask.to(input_ids.device)
+            elif attn_impl == "flex_attention":
+                from torch.nn.attention.flex_attention import create_block_mask
+
+                attention_mask = create_block_mask(
+                    partial(
+                        _create_bd3lm_attention_mask,
+                        block_size=self.block_size,
+                        n=l,
+                    ),
+                    B=None,
+                    H=None,
+                    Q_LEN=l * 2,
+                    KV_LEN=l * 2,
+                )
+            else:
+                raise NotImplementedError
+            self._cached_block_mask[cache_key] = attention_mask
 
         base_pos = (
             torch.arange(l, device=input_ids.device).unsqueeze(0).expand(b, l)

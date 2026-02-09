@@ -49,6 +49,10 @@ class A2DLlamaModel(transformers.LlamaModel):
                 past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1], device=inputs_embeds.device
             )
 
+        # Clamp cache_position to max_position_embeddings to avoid out-of-bounds indexing
+        max_pos = getattr(self.config, "max_position_embeddings", cache_position.max().item() + 1)
+        cache_position = cache_position.clamp(max=max_pos - 1)
+
         if position_ids is None:
             position_ids = cache_position.unsqueeze(0)
 

@@ -108,6 +108,7 @@ def load_pt_dataset(
             dataset_name_or_path, "BASE_DATASETS_DIR"
         )
         name = kvs.pop("name", None)
+        data_files = kvs.pop("data_files", None)
 
         if load_preprocessed_data:
             base = load_from_disk(dataset_name_or_path)
@@ -117,7 +118,12 @@ def load_pt_dataset(
                 dataset_name_or_path, name=name, lang=lang, streaming=streaming
             )
         else:
-            base = load_dataset(dataset_name_or_path, name=name, streaming=streaming)
+            base = load_dataset(
+                dataset_name_or_path,
+                name=name,
+                data_files=data_files,
+                streaming=streaming,
+            )
 
         return base, kvs, dataset_name_or_path
 
