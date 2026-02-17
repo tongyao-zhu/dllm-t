@@ -5,8 +5,7 @@
 Resources and examples for training (finetuning & pretraining) and evaluating diffusion language models **LLaDA**.
 
 ## Table of Contents
-- [Setup](#setup)
-- [Files](#files-overview)
+- [Files](#files)
 - [Training](#training)
 - [Inference](#inference)
 - [Evaluation](#evaluation)
@@ -23,16 +22,11 @@ Resources and examples for training (finetuning & pretraining) and evaluating di
 > -->
 
 
-##  Files
+## Files
 ```
-# pipeline modules relevant with LLaDA
+# Pipeline modules relevant to LLaDA
 dllm/pipelines/llada
 ├── __init__.py                     # Package initialization
-├── fastdllm/
-│   ├── configuration_llada.py      # Fast-dLLM LLaDA model configuration
-│   ├── modeling_llada.py           # Fast-dLLM LLaDA model architecture
-│   ├── sampler.py                  # Fast-dLLM inference module
-│   └── eval.py                     # Fast-dLLM evaluation module
 ├── models/
 │   ├── configuration_lladamoe.py   # LLaDA-MoE model configuration
 │   ├── configuration_llada.py      # LLaDA model configuration
@@ -42,13 +36,10 @@ dllm/pipelines/llada
 ├── sampler.py                      # Inference module
 └── trainer.py                      # Training module (pretraining and SFT)
 
-# example entry points for training / inference / evaluation
+# Example entry points for training / inference / evaluation
 examples/llada
 ├── chat.py                         # Interactive inference example
 ├── eval.sh                         # Automatic evaluation example
-├── fastdllm/
-│   ├── eval.sh                      # Fast-dLLM evaluation example
-│   └── sample.py                    # Fast-dLLM inference example
 ├── sample.py                       # Inference example
 ├── pt.py                           # Pretraining example
 ├── README.md                       # Documentation (you are here)
@@ -86,7 +77,7 @@ accelerate launch \
     examples/llada/sft.py \
     --model_name_or_path "GSAI-ML/LLaDA-8B-Base" \
     --dataset_args "tatsu-lab/alpaca" \
-    --max_length 1024 \ 
+    --max_length 1024 \
     --num_train_epochs 5 \
     --learning_rate 2e-5 \
     --per_device_train_batch_size 4 \
@@ -100,7 +91,7 @@ sbatch --nodes=2 --gres=gpu:8 scripts/train.slurm.sh \
     --script_path "examples/llada/sft.py" \
     --model_name_or_path "GSAI-ML/LLaDA-8B-Base" \
     --dataset_args "tatsu-lab/alpaca" \
-    --max_length 1024 \ 
+    --max_length 1024 \
     --num_train_epochs 5 \
     --learning_rate 2e-5 \
     --per_device_train_batch_size 4 \
@@ -148,7 +139,7 @@ sbatch --nodes=24 --gres=gpu:8 scripts/train.slurm.sh \
     --script_path "examples/llada/pt.py" \
     --model_name_or_path "GSAI-ML/LLaDA-8B-Base" \
     --dataset_args "mlfoundations/dclm-baseline-1.0" \
-    --max_length 1024 \ 
+    --max_length 1024 \
     --max_steps 2000 \
     --learning_rate 1e-4 \
     --per_device_train_batch_size 4 \
@@ -165,10 +156,6 @@ We also support interactive multi-turn dialogue with visualization:
 ```shell
 python examples/llada/chat.py --model_name_or_path "GSAI-ML/LLaDA-8B-Instruct"
 ```
-We support [Fast-dLLM](https://github.com/NVlabs/Fast-dLLM) sampling:
-```shell
-python examples/fastdllm/llada/sample.py --model_name_or_path "GSAI-ML/LLaDA-8B-Instruct" --use_cache prefix --threshold 0.9
-````
 
 ## Evaluation
 > Read [(optional) Evaluation setup](/README.md/#optional-evaluation-setup) before running evaluation. 
@@ -182,7 +169,7 @@ accelerate launch --num_processes 4 \
     --model "llada" \
     --apply_chat_template \
     --num_fewshot 5 \
-    --model_args "pretrained=GSAI-ML/LLaDA-8B-Instruct,max_new_tokens=512,steps=512,block_size=512,cfg=0.0,logits_eos_inf=False,confidence_eos_eot_inf=True"
+    --model_args "pretrained=GSAI-ML/LLaDA-8B-Instruct,max_new_tokens=512,steps=512,block_size=512,cfg_scale=0.0,suppress_tokens=[],begin_suppress_tokens=[126081;126348]"
 ```
 
 To automatically evaluate [`LLaDA-8B-Base`](https://huggingface.co/GSAI-ML/LLaDA-8B-Base) and [`LLaDA-8B-Instruct`](https://huggingface.co/GSAI-ML/LLaDA-8B-Instruct) on all benchmarks, run:
@@ -191,19 +178,16 @@ bash examples/llada/eval.sh --model_name_or_path GSAI-ML/LLaDA-8B-Instruct --ins
 bash examples/llada/eval.sh --model_name_or_path GSAI-ML/LLaDA-8B-Base --instruct False
 ```
 
-Fast-dLLM is supported for evaluation. To evaluate [`LLaDA-8B-Instruct`](https://huggingface.co/GSAI-ML/LLaDA-8B-Instruct) with the Fast-dLLM sampler, run:
-```shell
-bash examples/fastdllm/llada/eval.sh --model_name_or_path "GSAI-ML/LLaDA-8B-Instruct" --instruct True
-```
+For **Fast-dLLM** sampling and evaluation with LLaDA, see the [Fast-dLLM README](../fastdllm/README.md).
 
 ### Evaluation results
 
->  Results (evaluated) are evaluated using our framework, while results (reported) come from the original [paper](https://arxiv.org/abs/2502.09992). All evaluation settings follow the configurations in the [LLaDA](https://github.com/ML-GSAI/LLaDA) repository, with minor adjustments. 
+> Results (Reproduced) are evaluated using our framework, while results (Official) come from the original [paper](https://arxiv.org/abs/2502.09992). All evaluation settings follow the configurations in the [LLaDA](https://github.com/ML-GSAI/LLaDA) repository, with minor adjustments. 
 
-|               | MMLU | BBH | ARC&#8209;C | Hellaswag | TruthfulQA | WinoGrande | PIQA | GSM8K | GPQA | HumanEval | MBPP | CEval | CMMLU |
-|:----------------|:----:|:-----:|:-----------:|:-----------:|:------------:|:----:|:-----:|:----:|:----:|:-----------:|:----:|:------:|:------:|
-| [`LLaDA-8B-Base`](https://huggingface.co/GSAI-ML/LLaDA-8B-Base)(reported)| 65.9 | 49.7 | 45.9 | 70.5 | 46.1 | 74.8 | 73.6 | 70.3 | 25.2 | 35.4 | 40.0 | 70.5 | 69.9 |
-| [`LLaDA-8B-Base`](https://huggingface.co/GSAI-ML/LLaDA-8B-Base)(evaluated)| 65.8 | 49.5 | 45.8 | 69.3 | 45.6 | 72.7 | 70.6 | 70.4 | 29.3 | 32.3 | 38.8 | 70.2 | 69.9 |
+|               | MMLU | BBH | ARC&#8209;C | Hellaswag | TruthfulQA | WinoGrande | PIQA | GSM8K | Math | GPQA | HumanEval | MBPP | CEval | CMMLU |
+|:----------------|:----:|:-----:|:-----------:|:-----------:|:------------:|:----:|:-----:|:----:|:-----:|:----:|:-----------:|:----:|:------:|:------:|
+| [`LLaDA-8B-Base`](https://huggingface.co/GSAI-ML/LLaDA-8B-Base) (Official) | 65.9 | 49.7 | 45.9 | 70.5 | 46.1 | 74.8 | 73.6 | 70.3 | 31.4 | 25.2 | 35.4 | 40.0 | 70.5 | 69.9 |
+| [`LLaDA-8B-Base`](https://huggingface.co/GSAI-ML/LLaDA-8B-Base) (Reproduced) | 65.9 | 47.2 | 44.1 | 69.2 | 45.6 | 70.4 | 70.7 | 70.7 | 32.4 | 31.9 | 32.9 | 38.8 | 70.4 | 69.8 |
 
 
 <p align="center" style="color: #808080; font-size: 0.9em;">
@@ -215,8 +199,8 @@ Table 1. Evaluation results of
 
 |                 | MMLU | MMLU&#8209;Pro | ARC&#8209;C | Hellaswag | GSM8K | Math | GPQA | HumanEval | MBPP | 
 |:----------------|:----:|:---------:|:-----:|:-----------:|:-----:|:----:|:----:|:-----------:|:----:|
-| [`LLaDA-8B-Instruct`](https://huggingface.co/GSAI-ML/LLaDA-8B-Instruct)(reported) | 65.5 | 37.0 | 88.5 | 74.6 | 69.4 | 31.9 | 33.3 | 49.4 | 41.0 |
-| [`LLaDA-8B-Instruct`](https://huggingface.co/GSAI-ML/LLaDA-8B-Instruct)(evaluated) | 67.3 | 36.2 | 86.6 | 76.7 | 74.5 | 31.9 | 30.3 | 47.6 | 39.2 |
+| [`LLaDA-8B-Instruct`](https://huggingface.co/GSAI-ML/LLaDA-8B-Instruct) (Official) | 65.5 | 37.0 | 88.5 | 74.6 | 69.4 | 31.9 | 33.3 | 49.4 | 41.0 |
+| [`LLaDA-8B-Instruct`](https://huggingface.co/GSAI-ML/LLaDA-8B-Instruct) (Reproduced) | 69.8 | 36.2 | 86.4 | 76.7 | 74.7 | 31.9 | 30.6 | 47.0 | 40.0 |
 
 <p align="center" style="color: #808080; font-size: 0.9em;">
 Table 2. Evaluation results of 
