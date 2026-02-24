@@ -34,6 +34,11 @@ from functools import partial
 import accelerate
 import transformers
 
+# Initialize distributed state with extended timeout BEFORE importing dllm.
+# dllm's module-level code calls get_default_logger() which creates the
+# PartialState singleton. We must create it first with our custom timeout.
+accelerate.PartialState(timeout=timedelta(hours=2))
+
 import dllm
 
 logger = dllm.utils.get_default_logger(__name__)
@@ -73,8 +78,6 @@ def train():
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     dllm.utils.print_args_main(model_args, data_args, training_args)
     dllm.utils.initial_training_setup(model_args, data_args, training_args)
-    # Initialize distributed state with extended timeout for large dataset processing
-    accelerate.PartialState(timeout=timedelta(hours=2))
 
     # ----- Model ------------------------------------------------------------------
     model = dllm.utils.get_model(model_args=model_args)

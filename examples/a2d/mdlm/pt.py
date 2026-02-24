@@ -81,6 +81,8 @@ def train():
     model = dllm.utils.get_model(model_args=model_args)
     # ----- Tokenizer --------------------------------------------------------------
     tokenizer = dllm.utils.get_tokenizer(model_args=model_args)
+    # Resize model embeddings to accommodate new special tokens (e.g., mask_token)
+    model.resize_token_embeddings(len(tokenizer))
 
     # ----- Dataset ----------------------------------------------------------------
     with accelerate.PartialState().local_main_process_first():

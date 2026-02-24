@@ -8,7 +8,7 @@ export WANDB_MODE="online"
 
 # Determine output directory based on mode
 if [ "$mode" == "mdlm" ]; then
-    output_dir="models/a2d/llama3-1b/mdlm/$ds_name"
+    output_dir="models/a2d/llama3-1b/mdlm_v2/$ds_name"
 elif [ "$mode" == "block" ]; then
     output_dir="models/a2d/llama3-1b/bd3lm_new/$ds_name"
 else
@@ -46,15 +46,15 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --dataset_args $ds_path \
     --text_field "text" \
     --insert_eos True \
-    --max_length 2048 \
-    --max_steps 5000 \
+    --max_length 1024 \
+    --max_steps 20000 \
     --learning_rate 1e-4 \
-    --per_device_train_batch_size 4 \
+    --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 16 \
     --gradient_accumulation_steps 32 \
     --output_dir "$output_dir" \
     --eval_strategy "no" \
-    --save_steps 500 \
+    --save_steps 2000 \
     --save_only_model False \
     --ddp_timeout 7200 \
     --loss_norm_type "token" \

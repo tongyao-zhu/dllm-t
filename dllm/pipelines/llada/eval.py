@@ -361,13 +361,25 @@ class LLaDAEvalHarness(LM):
         out = []
         sampler = MDLMSampler(model=self.model, tokenizer=self.tokenizer)
 
-        for instance in tqdm(requests, desc="Generating..."):
-            context, gen_kwargs = instance.args  # type: ignore
-            prompt_ids = self.tokenizer(context)["input_ids"]
-            prompt = [torch.tensor(prompt_ids, device=self.device, dtype=torch.long)]
-            stop_tokens = gen_kwargs["until"]
+        # Process requests in batches for better GPU utilization
+        for batch_start in tqdm(
+            range(0, len(requests), self.batch_size),
+            desc=f"Generating (batch_size={self.batch_size})...",
+        ):
+            batch = requests[batch_start : batch_start + self.batch_size]
+
+            prompts = []
+            all_stop_tokens = []
+            for instance in batch:
+                context, gen_kwargs = instance.args  # type: ignore
+                prompt_ids = self.tokenizer(context)["input_ids"]
+                prompts.append(
+                    torch.tensor(prompt_ids, device=self.device, dtype=torch.long)
+                )
+                all_stop_tokens.append(gen_kwargs["until"])
+
             generated_ids = sampler.sample(
-                inputs=prompt,
+                inputs=prompts,
                 steps=self.steps,
                 max_new_tokens=self.max_new_tokens,
                 block_size=self.block_size,
@@ -378,19 +390,24 @@ class LLaDAEvalHarness(LM):
                 begin_suppress_tokens=self.begin_suppress_tokens,
                 right_shift_logits=self.right_shift_logits,
             )
-            generated_answer = self.tokenizer.decode(
-                generated_ids[0][prompt[0].shape[0] :], skip_special_tokens=False
-            )
-            for stop_seq in stop_tokens:
-                if stop_seq in generated_answer:
-                    generated_answer = generated_answer.split(stop_seq)[0]
 
-            # remove special tokens
-            generated_answer_ids = self.tokenizer(generated_answer)["input_ids"]
-            generated_answer = self.tokenizer.decode(
-                generated_answer_ids, skip_special_tokens=True
-            )
-            out.append(generated_answer)
+            for i, (prompt, stop_tokens) in enumerate(
+                zip(prompts, all_stop_tokens)
+            ):
+                generated_answer = self.tokenizer.decode(
+                    generated_ids[i][prompt.shape[0] :], skip_special_tokens=False
+                )
+                for stop_seq in stop_tokens:
+                    if stop_seq in generated_answer:
+                        generated_answer = generated_answer.split(stop_seq)[0]
+
+                # remove special tokens
+                generated_answer_ids = self.tokenizer(generated_answer)["input_ids"]
+                generated_answer = self.tokenizer.decode(
+                    generated_answer_ids, skip_special_tokens=True
+                )
+                out.append(generated_answer)
+
             if self.accelerator is not None:
                 self.accelerator.wait_for_everyone()
 
