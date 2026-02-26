@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import torch
 
-from dllm.core.trainers import MDLMTrainer
+from dllm.core.trainers import MDLMConfig, MDLMTrainer
 
 
 def cart_weight(
@@ -44,7 +44,7 @@ class DreamTrainer(MDLMTrainer):
     """
 
     @dataclass
-    class DreamConfig(MDLMTrainer.MDLMConfig):
+    class DreamConfig(MDLMConfig):
         loss_weight_type: str = "cart[geo_p:0.3]"
         right_shift_logits: bool = True
 

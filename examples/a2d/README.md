@@ -50,7 +50,7 @@ Before training, modify and save the source autoregressive models with non-causa
 For example, to save [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) with its original weights but with modified non-causal attention defined in
 [`modeling_qwen3.py`](/dllm/pipelines/a2d/models/qwen3/modeling_qwen3.py):
 ```shell
-python dllm/pipelines/a2d/convert.py --model_name_or_path "Qwen/Qwen3-0.6B" --output_dir "models/a2d/Qwen3-0.6B"
+python dllm/pipelines/a2d/convert.py --model_name_or_path "Qwen/Qwen3-0.6B" --output_dir ".models/a2d/Qwen3-0.6B"
 ```
 
 ## Warmup: [MDLM](https://arxiv.org/abs/2406.07524)
@@ -64,7 +64,7 @@ To train [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) on the [`ti
 ```shell
 accelerate launch --config_file scripts/accelerate_configs/ddp.yaml --num_processes 1 \
     examples/a2d/mdlm/pt.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "Trelis/tiny-shakespeare" \
     --text_field "Text" \
     --insert_eos False \
@@ -73,7 +73,7 @@ accelerate launch --config_file scripts/accelerate_configs/ddp.yaml --num_proces
     --learning_rate 1e-4 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
-    --output_dir "models/a2d/Qwen3-0.6B/mdlm/tiny-shakespeare"
+    --output_dir ".models/a2d/Qwen3-0.6B/mdlm/tiny-shakespeare"
 ```
 
 To sample from the model interactively:
@@ -81,7 +81,7 @@ To sample from the model interactively:
 # Enter a prompt (e.g., "First citizen: Before we proceed any further, hear me speak."),
 # or press Enter to let the model generate text from scratch.
 python -u examples/a2d/mdlm/chat.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B/mdlm/tiny-shakespeare/checkpoint-final" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B/mdlm/tiny-shakespeare/checkpoint-final" \
     --chat_template False --remasking "random" --temperature 0.7
 ```
 
@@ -92,7 +92,7 @@ To train [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) on the [`op
 ```shell
 accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_processes 8 \
     examples/a2d/mdlm/pt.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "dylanebert/openwebtext" \
     --text_field "text" \
     --streaming True \
@@ -103,7 +103,7 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
     --eval_strategy "no" \
-    --output_dir "models/a2d/Qwen3-0.6B/mdlm/openwebtext"
+    --output_dir ".models/a2d/Qwen3-0.6B/mdlm/openwebtext"
 ```
 
 To sample from the model interactively:
@@ -111,7 +111,7 @@ To sample from the model interactively:
 # Enter a prompt (e.g., "Lebron James is"),
 # or press Enter to let the model generate text from scratch.
 python -u examples/a2d/mdlm/chat.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B/mdlm/openwebtext/checkpoint-final" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B/mdlm/openwebtext/checkpoint-final" \
     --chat_template False --remasking "random" --temperature 0.7
 ```
 
@@ -124,20 +124,20 @@ To train [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) on the [`al
 ```shell
 accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_processes 8 \
     examples/a2d/mdlm/sft.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "tatsu-lab/alpaca" \
     --max_length 512 \
     --num_train_epochs 10 \
     --learning_rate 1e-4 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
-    --output_dir "models/a2d/Qwen3-0.6B/mdlm/alpaca"
+    --output_dir ".models/a2d/Qwen3-0.6B/mdlm/alpaca"
 ```
 
 To chat with the model:
 ```shell
 python -u examples/a2d/mdlm/chat.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B/mdlm/alpaca/checkpoint-final" --block_size 32
+    --model_name_or_path ".models/a2d/Qwen3-0.6B/mdlm/alpaca/checkpoint-final" --block_size 32
 ```
 
 ## Warmup: [BD3LM](https://arxiv.org/abs/2503.09573)
@@ -151,7 +151,7 @@ To train [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) on the [`ti
 ```shell
 accelerate launch --config_file scripts/accelerate_configs/ddp.yaml --num_processes 1 \
     examples/a2d/bd3lm/pt.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "Trelis/tiny-shakespeare" \
     --text_field "Text" \
     --insert_eos False \
@@ -161,7 +161,7 @@ accelerate launch --config_file scripts/accelerate_configs/ddp.yaml --num_proces
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
     --block_size 32 \
-    --output_dir "models/a2d/Qwen3-0.6B/bd3lm/tiny-shakespeare"
+    --output_dir ".models/a2d/Qwen3-0.6B/bd3lm/tiny-shakespeare"
 ```
 
 To sample from the model interactively:
@@ -169,7 +169,7 @@ To sample from the model interactively:
 # Enter a prompt (e.g., "First citizen: Before we proceed any further, hear me speak."),
 # or press Enter to let the model generate text from scratch.
 python -u examples/a2d/bd3lm/chat.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B/bd3lm/tiny-shakespeare/checkpoint-final" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B/bd3lm/tiny-shakespeare/checkpoint-final" \
     --chat_template False --block_size 32 --remasking "random" --temperature 0.7
 ```
 
@@ -180,7 +180,7 @@ To train [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) on the [`op
 ```shell
 accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_processes 8 \
     examples/a2d/bd3lm/pt.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "dylanebert/openwebtext" \
     --text_field "text" \
     --streaming True \
@@ -192,7 +192,7 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --per_device_eval_batch_size 16 \
     --eval_strategy "no" \
     --block_size 32 \
-    --output_dir "models/a2d/Qwen3-0.6B/bd3lm/openwebtext"
+    --output_dir ".models/a2d/Qwen3-0.6B/bd3lm/openwebtext"
 ```
 
 To sample from the model interactively:
@@ -200,7 +200,7 @@ To sample from the model interactively:
 # Enter a prompt (e.g., "Lebron James is"),
 # or press Enter to let the model generate text from scratch.
 python -u examples/a2d/bd3lm/chat.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B/bd3lm/openwebtext/checkpoint-final" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B/bd3lm/openwebtext/checkpoint-final" \
     --chat_template False --block_size 32 --remasking "random" --temperature 0.7
 ```
 </details>
@@ -212,7 +212,7 @@ To train [`Qwen/Qwen3-0.6B`](https://huggingface.co/Qwen/Qwen3-0.6B) on the [`al
 ```shell
 accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_processes 8 \
     examples/a2d/bd3lm/sft.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "tatsu-lab/alpaca" \
     --max_length 512 \
     --num_train_epochs 10 \
@@ -220,13 +220,13 @@ accelerate launch --config_file scripts/accelerate_configs/zero2.yaml --num_proc
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
     --block_size 32 \
-    --output_dir "models/a2d/Qwen3-0.6B/bd3lm/alpaca"
+    --output_dir ".models/a2d/Qwen3-0.6B/bd3lm/alpaca"
 ```
 
 To chat with the model:
 ```shell
 python -u examples/a2d/bd3lm/chat.py \
-    --model_name_or_path "models/a2d/Qwen3-0.6B/bd3lm/alpaca/checkpoint-final" --block_size 32
+    --model_name_or_path ".models/a2d/Qwen3-0.6B/bd3lm/alpaca/checkpoint-final" --block_size 32
 ```
 
 ## `Tiny-A2D`
@@ -245,7 +245,7 @@ To reproduce [`Qwen3-0.6B-diffusion-mdlm-v0.1`](https://huggingface.co/dllm-coll
 WANDB_MODE=online sbatch --nodes=8 --gres=gpu:8 scripts/train.slurm.sh \
     --accelerate_config "zero2" \
     --script_path "examples/a2d/mdlm/sft.py" \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "allenai/tulu-3-sft-mixture+HuggingFaceTB/smoltalk+OpenCoder-LLM/opc-sft-stage1[lang:python]+OpenCoder-LLM/opc-sft-stage2[lang:python]" \
     --max_length 1024 \
     --num_train_epochs 10 \
@@ -253,7 +253,7 @@ WANDB_MODE=online sbatch --nodes=8 --gres=gpu:8 scripts/train.slurm.sh \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 16 \
     --gradient_accumulation_steps 2 \
-    --output_dir "models/a2d/Qwen3-0.6B/tulu-3-sft-mixture+smoltalk+opc-sft-stage1&2/epochs-10-bs-2048-len-1024"
+    --output_dir ".models/a2d/Qwen3-0.6B/tulu-3-sft-mixture+smoltalk+opc-sft-stage1&2/epochs-10-bs-2048-len-1024"
 ```
 
 To reproduce [`Qwen3-0.6B-diffusion-bd3lm-v0.1`](https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-bd3lm-v0.1) (with BD3LM & SFT), run the command below (about 10 hours on 64 A100s):
@@ -261,7 +261,7 @@ To reproduce [`Qwen3-0.6B-diffusion-bd3lm-v0.1`](https://huggingface.co/dllm-col
 WANDB_MODE=online sbatch --nodes=8 --gres=gpu:8 scripts/train.slurm.sh \
     --accelerate_config "zero2" \
     --script_path "examples/a2d/bd3lm/sft.py" \
-    --model_name_or_path "models/a2d/Qwen3-0.6B" \
+    --model_name_or_path ".models/a2d/Qwen3-0.6B" \
     --dataset_args "allenai/tulu-3-sft-mixture+HuggingFaceTB/smoltalk+OpenCoder-LLM/opc-sft-stage1[lang:python]+OpenCoder-LLM/opc-sft-stage2[lang:python]" \
     --max_length 512 \
     --num_train_epochs 10 \
@@ -270,7 +270,7 @@ WANDB_MODE=online sbatch --nodes=8 --gres=gpu:8 scripts/train.slurm.sh \
     --per_device_eval_batch_size 16 \
     --gradient_accumulation_steps 2 \
     --block_size 32 \
-    --output_dir "models/a2d/Qwen3-0.6B/tulu-3-sft-mixture+smoltalk+opc-sft-stage1&2/epochs-10-bs-2048-len-512-bls-32"
+    --output_dir ".models/a2d/Qwen3-0.6B/tulu-3-sft-mixture+smoltalk+opc-sft-stage1&2/epochs-10-bs-2048-len-512-bls-32"
 ```
 
 ### Inference
@@ -307,7 +307,7 @@ accelerate launch --num_processes 4 \
 
 To automatically evaluate [`Qwen3-0.6B-diffusion-mdlm-v0.1`](https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-mdlm-v0.1) and [`Qwen3-0.6B-diffusion-bd3lm-v0.1`](https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-bd3lm-v0.1) on all benchmarks, run:
 ```shell
-bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B-diffusion-mdlm-v0.1" 
+bash examples/a2d/mdlm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B-diffusion-mdlm-v0.1" 
 bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B-diffusion-bd3lm-v0.1" 
 ```
 
@@ -331,11 +331,11 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
     <tr style="border-bottom: 3px solid #333;">
       <th style="padding: 8px; text-align: left;">Model                        </th>
       <th style="padding: 8px;">GSM8K</th>
-      <th style="padding: 8px;">MATH</th>
       <th style="padding: 8px;">BBH</th>
+      <th style="padding: 8px;">MATH</th>
+      <th style="padding: 8px;">MMLU</th>
       <th style="padding: 8px;">MMLU&#8209;Pro</th>
       <th style="padding: 8px;">Hellaswag</th>
-      <th style="padding: 8px;">MMLU</th>
       <th style="padding: 8px;">HumanEval</th>
       <th style="padding: 8px;">MBPP</th>
     </tr>
@@ -344,21 +344,21 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
   <!-- mdlm v0.1 -->
   <tr>
     <td style="padding: 8px;">
-      <a href="https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-mdlm-v0.1"><code>Qwen3-0.6B-diffusion-mdlm-v0.1</code></a> (evaluated)
+      <a href="https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-mdlm-v0.1"><code>Qwen3-0.6B-diffusion-mdlm-v0.1</code></a> (Reproduced)
     </td>
-    <td>29.8</td><td>8.8</td><td>27.0</td>
-    <td>17.6</td><td>42.1</td><td>40.0</td>
+    <td>29.3</td><td>26.7</td><td>8.7</td>
+    <td>40.0</td><td>17.3</td><td>42.1</td>
     <td>30.5</td><td>29.2</td>
   </tr>
 
   <!-- bd3lm v0.1 -->
   <tr>
     <td style="padding: 8px;">
-      <a href="https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-bd3lm-v0.1"><code>Qwen3-0.6B-diffusion-bd3lm-v0.1</code></a> (evaluated)
+      <a href="https://huggingface.co/dllm-collection/Qwen3-0.6B-diffusion-bd3lm-v0.1"><code>Qwen3-0.6B-diffusion-bd3lm-v0.1</code></a> (Reproduced)
     </td>
-    <td>46.6</td><td>13.9</td><td>27.0</td>
-    <td>14.1</td><td>40.0</td><td>38.8</td>
-    <td>47.6</td><td>32.0</td>
+    <td>46.3</td><td>26.6</td><td>12.9</td>
+    <td>39.1</td><td>13.8</td><td>39.3</td>
+    <td>46.3</td><td>38.2</td>
   </tr>
 
   <!-- Divider -->
@@ -368,16 +368,16 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
 
   <!-- AR model -->
   <tr>
-    <td style="padding: 8px;"><i><a href="https://huggingface.co/Qwen/Qwen2.5-0.5B"><code>Qwen2.5-0.5B</code></a> (reported)</i></td>
-    <td><i>41.6</i></td><td><i>19.5</i></td><td><i>20.3</i></td><td><i>15.7</i></td><td><i>52.1</i></td><td><i>47.5</i></td><td><i>30.5</i></td><td><i>39.3</i></td>
+    <td style="padding: 8px;"><i><a href="https://huggingface.co/Qwen/Qwen2.5-0.5B"><code>Qwen2.5-0.5B</code></a> (Official)</i></td>
+    <td><i>41.6</i></td><td><i>20.3</i></td><td><i>19.5</i></td><td><i>47.5</i></td><td><i>15.7</i></td><td><i>52.1</i></td><td><i>30.5</i></td><td><i>39.3</i></td>
   </tr>
 
   <tr>
     <td style="padding: 8px;"><i>
-      <a href="https://huggingface.co/Qwen/Qwen3-0.6B-Base"><code>Qwen3-0.6B-Base</code></a> (reported)
+      <a href="https://huggingface.co/Qwen/Qwen3-0.6B-Base"><code>Qwen3-0.6B-Base</code></a> (Official)
     </i></td>
-    <td><i>59.6</i></td><td><i>32.4</i></td><td><i>41.5</i></td>
-    <td><i>24.7</i></td><td><i>47.4</i></td><td><i>52.8</i></td>
+    <td><i>59.6</i></td><td><i>41.5</i></td><td><i>32.4</i></td>
+    <td><i>52.8</i></td><td><i>24.7</i></td><td><i>47.4</i></td>
     <td><i>32.3</i></td><td><i>36.6</i></td>
   </tr>
 
@@ -397,7 +397,7 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
   <!-- mdlm v0.1  -->
   <tr>
     <td style="padding: 8px;">
-      <a href="https://huggingface.co/dllm-collection/Qwen2.5-Coder-0.5B-Instruct-diffusion-mdlm-v0.1"><code>Qwen2.5-Coder-0.5B-Instruct-diffusion-mdlm-v0.1</code></a> (evaluated)
+      <a href="https://huggingface.co/dllm-collection/Qwen2.5-Coder-0.5B-Instruct-diffusion-mdlm-v0.1"><code>Qwen2.5-Coder-0.5B-Instruct-diffusion-mdlm-v0.1</code></a> (Reproduced)
     </td>
     <td>28.1</td>
     <td>23.0</td>
@@ -406,16 +406,16 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
   <!-- bd3lm v0.1  -->
   <tr>
     <td style="padding: 8px;">
-      <a href="https://huggingface.co/dllm-collection/Qwen2.5-Coder-0.5B-Instruct-diffusion-bd3lm-v0.1"><code>Qwen2.5-Coder-0.5B-Instruct-diffusion-bd3lm-v0.1</code></a> (evaluated)
+      <a href="https://huggingface.co/dllm-collection/Qwen2.5-Coder-0.5B-Instruct-diffusion-bd3lm-v0.1"><code>Qwen2.5-Coder-0.5B-Instruct-diffusion-bd3lm-v0.1</code></a> (Reproduced)
     </td>
-    <td>41.5</td>
-    <td>33.6</td>
+    <td>39.0</td>
+    <td>33.2</td>
   </tr>
 
   <!-- open-dcoder -->
   <tr>
     <td style="padding: 8px;">
-      <a href="https://huggingface.co/fredzzp/open-dcoder-0.5B"><code>open-dcoder-0.5B</code></a> (reported)
+      <a href="https://huggingface.co/fredzzp/open-dcoder-0.5B"><code>open-dcoder-0.5B</code></a> (Official)
     </td>
     <td>20.8</td>
     <td>35.2</td>
@@ -429,7 +429,7 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
   <!-- AR model-->
   <tr>
     <td style="padding: 8px;"><i>
-      <a href="https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct"><code>Qwen2.5-Coder-0.5B-Instruct</code></a> (reported)
+      <a href="https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct"><code>Qwen2.5-Coder-0.5B-Instruct</code></a> (Official)
     </i></td>
     <td><i>28.0</i></td>
     <td><i>52.9</i></td>
@@ -438,7 +438,7 @@ bash examples/a2d/bd3lm/eval.sh --model_name_or_path "dllm-collection/Qwen3-0.6B
 </table>
 
 <p align="left" style="color: #808080; font-size: 0.9em;">
-Table 1. Results (evaluated) are obtained using our framework, while results (reported) come from the 
+Table 1. Results (Reproduced) are obtained using our framework, while results (Official) come from the 
 <a href="https://arxiv.org/pdf/2505.09388" style="color: #808080; text-decoration: none;">Qwen3 Technical Report</a>, 
 <a href="https://arxiv.org/pdf/2409.12186" style="color: #808080; text-decoration: none;">Qwen2.5-Coder Technical Report</a>, 
 <a href="https://qwenlm.github.io/blog/qwen2.5-llm/" style="color: #808080; text-decoration: none;">Qwen2.5 Blog</a>, and 

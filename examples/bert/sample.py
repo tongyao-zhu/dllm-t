@@ -56,7 +56,7 @@ inputs = tokenizer.apply_chat_template(
     tokenize=True,
 )
 outputs = sampler.sample(inputs, sampler_config, return_dict=True)
-sequences = dllm.utils.decode_trim(tokenizer, outputs.sequences.tolist(), inputs)
+sequences = dllm.utils.sample_trim(tokenizer, outputs.sequences.tolist(), inputs)
 
 for iter, s in enumerate(sequences):
     print("\n" + "-" * 80)
